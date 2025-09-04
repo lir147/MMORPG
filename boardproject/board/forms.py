@@ -25,7 +25,7 @@ class AnnouncementForm(forms.ModelForm):
     content = forms.CharField(widget=CKEditor5Widget())
     class Meta:
         model = Announcement
-        fields = ['title', 'content', 'category', 'image']
+        fields = ['title', 'content', 'category', 'image', 'video']
 
 class ResponseForm(forms.ModelForm):
     class Meta:

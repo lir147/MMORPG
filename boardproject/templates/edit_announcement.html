@@ -1,29 +1,24 @@
 {% extends 'base.html' %}
-
 {% block content %}
 <h2>Редактировать объявление</h2>
 <form method="post" enctype="multipart/form-data" novalidate>
     {% csrf_token %}
     {{ form.non_field_errors }}
-
     <p>
         {{ form.title.label_tag }}<br>
         {{ form.title }}
         {{ form.title.errors }}
     </p>
-
     <p>
         {{ form.category.label_tag }}<br>
         {{ form.category }}
         {{ form.category.errors }}
     </p>
-
     <p>
         {{ form.content.label_tag }}<br>
         {{ form.content }}
         {{ form.content.errors }}
     </p>
-
     <p>
         {{ form.image.label_tag }}<br>
         {% if form.instance.image %}
@@ -32,7 +27,17 @@
         {{ form.image }}
         {{ form.image.errors }}
     </p>
-
+    <p>
+        {{ form.video.label_tag }}<br>
+        {% if form.instance.video %}
+            <video width="320" controls>
+                <source src="{{ form.instance.video.url }}" type="video/mp4">
+                Ваш браузер не поддерживает воспроизведение видео.
+            </video><br>
+        {% endif %}
+        {{ form.video }}
+        {{ form.video.errors }}
+    </p>
     <button type="submit" class="btn">Сохранить</button>
 </form>
 {% endblock %}

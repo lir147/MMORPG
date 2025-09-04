@@ -5,9 +5,19 @@
     <p><strong>Автор:</strong> {{ announcement.user.username }}</p>
     <p><strong>Категория:</strong> {{ announcement.category.get_name_display }}</p>
     <div>{{ announcement.content|safe }}</div>
+
     {% if announcement.image %}
-        <img src="{{ announcement.image.url }}" alt="">
+        <img src="{{ announcement.image.url }}" alt="" style="max-width: 100%; height: auto; margin-bottom: 10px;">
     {% endif %}
+
+    {% if announcement.video %}
+        <video controls style="max-width: 100%; height: auto; margin-bottom: 10px;">
+            <source src="{{ announcement.video.url }}" type="video/mp4">
+            <source src="{{ announcement.video.url }}" type="video/ogg">
+            Ваш браузер не поддерживает просмотр видео.
+        </video>
+    {% endif %}
+
     <p><small>{{ announcement.created_at }}</small></p>
     <p>Вы вошли как: {{ user.username }} (id={{ user.id }})</p>
     <p>Автор объявления: {{ announcement.user.username }} (id={{ announcement.user.id }})</p>
@@ -15,6 +25,7 @@
          <a href="{% url 'edit_announcement' announcement.pk %}" class="btn">Редактировать</a>
          <a href="{% url 'delete_announcement' announcement.pk %}" class="btn" onclick="return confirm('Удалить объявление?');">Удалить</a>
     {% endif %}
+
     <h2>Отклики</h2>
     {% for response in responses %}
         <!-- Отрисовка откликов -->

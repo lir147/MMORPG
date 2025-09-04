@@ -1,8 +1,6 @@
 {% extends 'base.html' %}
-
 {% block content %}
 <h2>{% if form.instance.pk %}Редактирование{% else %}Создание{% endif %} объявления</h2>
-
 <form method="post" enctype="multipart/form-data" novalidate>
     {% csrf_token %}
     {{ form.non_field_errors }}
@@ -29,6 +27,12 @@
         {{ form.image.label_tag }}<br>
         {{ form.image }}
         {{ form.image.errors }}
+    </p>
+
+    <p>
+        {{ form.video.label_tag }}<br>
+        {{ form.video }}
+        {{ form.video.errors }}
     </p>
 
     {{ form.media }}
