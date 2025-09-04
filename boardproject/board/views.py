@@ -1,45 +1,13 @@
-from django.shortcuts import render, redirect, get_object_or_404
-from django.contrib.auth import login
-from django.contrib import messages
-from django.core.mail import send_mail
-from django.contrib.auth.decorators import login_required
 from django.views import View
-from .models import User, Announcement, Response, Category
-from .forms import RegistrationForm, AnnouncementForm, ResponseForm
+from django.shortcuts import render, redirect, get_object_or_404
+from django.urls import reverse
+from django.contrib import messages
 from django.conf import settings
-
-
-
-@login_required
-def my_responses(request):
-    announcements = Announcement.objects.filter(author=request.user)
-    responses = Response.objects.filter(announcement__in=announcements)
-
-    announcement_id = request.GET.get('announcement')
-    if announcement_id:
-        responses = responses.filter(announcement_id=announcement_id)
-
-    return render(request, 'my_responses.html', {
-        'responses': responses,
-        'announcements': announcements,
-    })
-
-@login_required
-def accept_response(request, response_id):
-    response = get_object_or_404(Response, pk=response_id, announcement__author=request.user)
-    response.status = 'accepted'
-    response.save()
-    return redirect('my_responses')
-
-@login_required
-def delete_response(request, response_id):
-    response = get_object_or_404(Response, pk=response_id, announcement__author=request.user)
-    response.delete()
-    return redirect('my_responses')
-
-def index(request):
-    announcements = Announcement.objects.all().order_by('-created_at')
-    return render(request, 'announcement_list.html', {'announcements': announcements})
+from django.core.mail import send_mail
+from .forms import RegistrationForm, AnnouncementForm
+from .models import User, Announcement, NewsletterSubscriber, Category
+from django.contrib.auth.decorators import login_required
+from django.utils.decorators import method_decorator
 
 class CustomRegistrationView(View):
     def get(self, request):
@@ -49,123 +17,94 @@ class CustomRegistrationView(View):
     def post(self, request):
         form = RegistrationForm(request.POST)
         if form.is_valid():
-            user = form.save(commit=False)
-            user.is_active = False
-            user.generate_confirmation_code()
-            user.save()
+            user = form.save()
+            user.generate_confirmation_token()
+            confirm_url = request.build_absolute_uri(
+                reverse('confirm_registration') + f'?token={user.confirmation_token}'
+            )
             send_mail(
-                'Подтверждение регистрации',
-                f'Код подтверждения: {user.confirmation_code}',
+                'Подтвердите регистрацию',
+                f'Чтобы завершить регистрацию, перейдите по ссылке:\n{confirm_url}',
                 settings.DEFAULT_FROM_EMAIL,
                 [user.email],
             )
-            messages.success(request, 'Проверьте email для подтверждения регистрации.')
-            return redirect('confirm_registration')
+            messages.success(request, 'Регистрация успешна! Проверьте email для подтверждения.')
+            return redirect('login')
         return render(request, 'registration.html', {'form': form})
 
-def confirm_registration(request):
-    if request.method == 'POST':
-        code = request.POST.get('code')
-        user = User.objects.filter(confirmation_code=code).first()
-        if user:
-            user.is_active = True
-            user.email_confirmed = True
-            user.confirmation_code = ''
-            user.save()
-            login(request, user)
-            messages.success(request, 'Регистрация подтверждена!')
-            return redirect('index')
-        messages.error(request, 'Неверный код подтверждения')
-    return render(request, 'confirm_registration.html')
+class ConfirmRegistrationView(View):
+    def get(self, request):
+        token = request.GET.get('token')
+        user = User.objects.filter(confirmation_token=token).first()
+        if not user:
+            messages.error(request, 'Неверный токен подтверждения')
+            return redirect('register')
+        if not user.is_token_valid():
+            messages.error(request, 'Срок действия токена истёк')
+            return redirect('register')
+        user.email_confirmed = True
+        user.is_active = True
+        user.confirmation_token = None
+        user.save()
+        messages.success(request, 'Email подтверждён. Теперь вы можете войти.')
+        return redirect('login')
 
-@login_required
-def create_announcement(request):
-    if request.method == 'POST':
-        form = AnnouncementForm(request.POST, request.FILES)
+@method_decorator(login_required, name='dispatch')
+class CreateAnnouncementView(View):
+    def get(self, request):
+        form = AnnouncementForm()
+        return render(request, 'create_announcement.html', {'form': form})
+
+    def post(self, request):
+        form = AnnouncementForm(request.POST)
         if form.is_valid():
             announcement = form.save(commit=False)
             announcement.user = request.user
             announcement.save()
-            messages.success(request, 'Объявление создано.')
+            messages.success(request, 'Объявление создано')
             return redirect('index')
-    else:
-        form = AnnouncementForm()
-    return render(request, 'create_announcement.html', {'form': form})
+        return render(request, 'create_announcement.html', {'form': form})
+
+def index(request):
+    announcements = Announcement.objects.all().order_by('-created_at')
+    return render(request, 'announcement_list.html', {'announcements': announcements})
 
 @login_required
-def edit_announcement(request, pk):
-    announcement = get_object_or_404(Announcement, pk=pk, user=request.user)
-    if request.method == 'POST':
-        form = AnnouncementForm(request.POST, request.FILES, instance=announcement)
-        if form.is_valid():
-            form.save()
-            messages.success(request, 'Объявление обновлено.')
-            return redirect('index')
-    else:
-        form = AnnouncementForm(instance=announcement)
-    return render(request, 'edit_announcement.html', {'form': form})
-
-def announcement_detail(request, pk):
-    announcement = get_object_or_404(Announcement, pk=pk)
-    responses = announcement.response_set.all()
-    return render(request, 'announcement_detail.html', {
-        'announcement': announcement,
-        'responses': responses,
-    })
+def subscribe_newsletter(request):
+    sub, _ = NewsletterSubscriber.objects.get_or_create(user=request.user)
+    sub.active = True
+    sub.save()
+    messages.success(request, 'Вы подписаны на новости.')
+    return redirect('index')
 
 @login_required
-def submit_response(request, pk):
-    announcement = get_object_or_404(Announcement, pk=pk)
-    if request.method == 'POST':
-        form = ResponseForm(request.POST)
-        if form.is_valid():
-            response = form.save(commit=False)
-            response.announcement = announcement
-            response.user = request.user
-            response.save()
-            # Исправлено: использование правильного адреса отправителя
-            send_mail(
-                f'Новый отклик на ваше объявление "{announcement.title}"',
-                f'От: {request.user.username}\nТекст: {response.text}',
-                settings.DEFAULT_FROM_EMAIL,  # Замена на реальный email из settings
-                [announcement.user.email],
-            )
-            messages.success(request, 'Отклик отправлен владельцу объявления.')
-            return redirect('announcement_detail', pk=pk)
-    else:
-        form = ResponseForm()
-    return render(request, 'submit_response.html', {'form': form, 'announcement': announcement})
+def unsubscribe_newsletter(request):
+    sub = NewsletterSubscriber.objects.filter(user=request.user).first()
+    if sub:
+        sub.active = False
+        sub.save()
+    messages.success(request, 'Вы отписаны от новостей.')
+    return redirect('index')
 
-@login_required
-def manage_responses(request):
-    categories = Category.objects.all()
-    responses = Response.objects.filter(announcement__user=request.user)
-    # Фильтрация по категории, если выставлен GET-параметр
-    category_filter = request.GET.get('category')
-    if category_filter:
-        responses = responses.filter(announcement__category__name=category_filter)
+from django.contrib.admin.views.decorators import staff_member_required
+from django.views.decorators.http import require_http_methods
+
+@staff_member_required
+@require_http_methods(["GET", "POST"])
+def send_newsletter(request):
     if request.method == 'POST':
-        response_id = request.POST.get('response_id')
-        action = request.POST.get('action')
-        response = get_object_or_404(Response, pk=response_id, announcement__user=request.user)
-        if action == 'delete':
-            response.delete()
-            messages.success(request, 'Отклик удалён.')
-        elif action == 'accept':
-            response.accepted = True
-            response.save()
-            # Исправлено: использование правильного адреса отправителя
-            send_mail(
-                'Ваш отклик принят!',
-                f'Объявление: {response.announcement.title}',
-                settings.DEFAULT_FROM_EMAIL,  # Замена на реальный email из settings
-                [response.user.email],
-            )
-            messages.success(request, 'Отклик принят, пользователь уведомлен.')
-        # После POST - редирект на ту же страницу, чтобы не было повторной отправки формы
-        return redirect('manage_responses')
-    return render(request, 'manage_responses.html', {
-        'responses': responses,
-        'categories': categories,
-        'category_filter': category_filter,
-    })
+        message = request.POST.get('message')
+        if not message:
+            messages.error(request, 'Текст сообщения не может быть пустым.')
+            return redirect('send_newsletter')
+        subscribers = NewsletterSubscriber.objects.filter(active=True).select_related('user')
+        emails = [s.user.email for s in subscribers if s.user.email]
+        send_mail(
+            'Новостная рассылка',
+            message,
+            settings.DEFAULT_FROM_EMAIL,
+            emails,
+        )
+        messages.success(request, 'Новостная рассылка отправлена.')
+        return redirect('index')
+    return render(request, 'send_newsletter.html')
