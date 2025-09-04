@@ -1,0 +1,19 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<h2>Отправка новостной рассылки</h2>
+
+<form method="post">
+    {% csrf_token %}
+    <p>
+        <label for="id_message">Текст сообщения:</label><br>
+        <textarea id="id_message" name="message" rows="10" cols="80">{{ request.POST.message }}</textarea>
+        {% if messages %}
+            {% for message in messages %}
+                <div class="alert">{{ message }}</div>
+            {% endfor %}
+        {% endif %}
+    </p>
+    <button type="submit">Отправить рассылку</button>
+</form>
+{% endblock %}

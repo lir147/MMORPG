@@ -17,6 +17,18 @@ import logging  # Для логирования ошибок отправки em
 
 logging.basicConfig(level=logging.INFO)
 
+@login_required
+def edit_announcement(request, pk):
+    announcement = get_object_or_404(Announcement, pk=pk, user=request.user)
+    if request.method == 'POST':
+        form = AnnouncementForm(request.POST, request.FILES, instance=announcement)
+        if form.is_valid():
+            form.save()
+            messages.success(request, 'Объявление обновлено')
+            return redirect('index')
+    else:
+        form = AnnouncementForm(instance=announcement)
+    return render(request, 'edit_announcement.html', {'form': form})
 
 @login_required
 def delete_announcement(request, pk):
@@ -327,8 +339,8 @@ def send_newsletter(request):
 
 @csrf_exempt
 def ckeditor_5_upload_file(request):
-    if request.method == 'POST' and request.FILES.get('upload'):
-        upload = request.FILES['upload']
+    if request.method == 'POST' and request.FILES:
+        upload = list(request.FILES.values())[0]
         saved_path = default_storage.save(upload.name, upload)
         url = default_storage.url(saved_path)
         return JsonResponse({'url': url})

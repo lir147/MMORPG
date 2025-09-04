@@ -3,7 +3,7 @@
 
 body {
     font-family: 'Cinzel', serif;
-    background: url('/static/images/dungeon-bg.jpg') no-repeat center center fixed; /* Добавьте изображение */
+    background: url('/static/images/dungeon-bg.jpg') no-repeat center center fixed;
     background-size: cover;
     color: #FFD700; /* Золото */
     margin: 0;
@@ -28,9 +28,12 @@ button, .btn {
     background: #B22222; /* Тёмно-красный */
     color: #FFD700;
     border: 2px solid #FFD700;
-    padding: 10px;
+    padding: 10px 20px;
     border-radius: 5px;
     cursor: pointer;
+    font-weight: bold;
+    transition: background-color 0.3s ease, color 0.3s ease;
+    text-decoration: none;
 }
 
 button:hover, .btn:hover {
@@ -38,13 +41,48 @@ button:hover, .btn:hover {
     color: #000;
 }
 
-form input, form textarea {
+form input, form textarea, form select {
     background: #333;
     color: #FFD700;
     border: 1px solid #FFD700;
+    padding: 8px;
+    border-radius: 4px;
+    width: 100%;
+    box-sizing: border-box;
+    font-family: 'Cinzel', serif;
+    margin-bottom: 15px;
 }
 
-/* Иконки классов */
-.tank::before { content: "\🛡️"; }
-.healer::before { content: "\🧪"; }
-/* Добавьте другие */
+/* Иконки классов с отступом */
+.tank::before {
+    content: "🛡️";
+    margin-right: 6px;
+}
+
+.healer::before {
+    content: "🧪";
+    margin-right: 6px;
+}
+
+.btn-bordered {
+    display: inline-block;
+    padding: 6px 12px;
+    margin-right: 8px;
+    font-weight: 600;
+    color: #FFD700; /* Золотой цвет */
+    background-color: transparent;
+    border: 2px solid #FFD700; /* Золотая рамка */
+    border-radius: 6px;
+    text-decoration: none;
+    cursor: pointer;
+    transition: background-color 0.3s, color 0.3s;
+    font-family: 'Cinzel', serif;
+}
+
+.btn-bordered:hover,
+.btn-bordered:focus {
+    background-color: #FFD700;
+    color: #000;
+    text-decoration: none;
+    outline: none;
+}

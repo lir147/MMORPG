@@ -1,4 +1,5 @@
 import os
+from pathlib import Path
 
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
@@ -70,18 +71,24 @@ USE_I18N = True
 USE_L10N = True
 USE_TZ = True
 
-STATIC_URL = '/static/'
-STATICFILES_DIRS = [os.path.join(BASE_DIR, 'static')]
+BASE_DIR = Path(__file__).resolve().parent.parent
 
 MEDIA_URL = '/media/'
-MEDIA_ROOT = BASE_DIR , 'media'
+MEDIA_ROOT = BASE_DIR / 'media'
+
+STATIC_URL = '/static/'
+STATICFILES_DIRS = [
+    BASE_DIR / "static",
+]
+
 
 CKEDITOR_5_CONFIGS = {
     'default': {
         'toolbar': [
             'heading', '|',
             'bold', 'italic', 'link', 'bulletedList', 'numberedList', 'blockQuote', '|',
-            'insertTable', 'mediaEmbed', 'undo', 'redo'
+            'insertTable', 'mediaEmbed',
+            'undo', 'redo'
         ],
         'simpleUpload': {
             'uploadUrl': '/ckeditor5/upload/',
@@ -89,8 +96,8 @@ CKEDITOR_5_CONFIGS = {
         'language': 'ru',
         'mediaEmbed': {
             'previewsInData': True
-        }
-    },
+        },
+    }
 }
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
