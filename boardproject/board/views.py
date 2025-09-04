@@ -41,7 +41,7 @@ def index(request):
     announcements = Announcement.objects.all().order_by('-created_at')
     return render(request, 'announcement_list.html', {'announcements': announcements})
 
-class RegistrationView(View):
+class CustomRegistrationView(View):
     def get(self, request):
         form = RegistrationForm()
         return render(request, 'registration.html', {'form': form})
@@ -53,14 +53,13 @@ class RegistrationView(View):
             user.is_active = False
             user.generate_confirmation_code()
             user.save()
-            # Исправлено: использование правильного адреса отправителя
             send_mail(
                 'Подтверждение регистрации',
                 f'Код подтверждения: {user.confirmation_code}',
-                settings.DEFAULT_FROM_EMAIL,  # Замена на реальный email из settings
+                settings.DEFAULT_FROM_EMAIL,
                 [user.email],
             )
-            messages.success(request, 'Проверьте email, чтобы подтвердить регистрацию.')
+            messages.success(request, 'Проверьте email для подтверждения регистрации.')
             return redirect('confirm_registration')
         return render(request, 'registration.html', {'form': form})
 

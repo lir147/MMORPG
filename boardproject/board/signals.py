@@ -6,10 +6,10 @@ from .models import Response
 @receiver(post_save, sender=Response)
 def notify_author_on_response(sender, instance, created, **kwargs):
     if created:
-        announcement_author_email = instance.announcement.author.email  # предполагается, что автор объявления в поле author
+        announcement_author_email = instance.announcement.user.email  # заменили author на user
         send_mail(
             subject='Новый отклик на ваше объявление',
-            message=f'Пользователь {instance.user.username} откликнулся: {instance.text}',
+            message=f'Пользователь {instance.user.username} оставил отклик: {instance.text}',
             from_email=None,
             recipient_list=[announcement_author_email],
         )
