@@ -1,0 +1,16 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<h2>Отклик на объявление: "{{ announcement.title }}"</h2>
+<form method="post" novalidate>
+    {% csrf_token %}
+    {{ form.non_field_errors }}
+    <p>
+        {{ form.text.label_tag }}<br>
+        {{ form.text }}
+        {{ form.text.errors }}
+    </p>
+    <button type="submit" class="btn">Отправить отклик</button>
+</form>
+<a href="{% url 'announcement_detail' announcement.pk %}">Назад к объявлению</a>
+{% endblock %}

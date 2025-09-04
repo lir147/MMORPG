@@ -1,0 +1,50 @@
+/* MMORPG-стиль: Фэнтези */
+@import url('https://fonts.googleapis.com/css2?family=Cinzel&display=swap');
+
+body {
+    font-family: 'Cinzel', serif;
+    background: url('/static/images/dungeon-bg.jpg') no-repeat center center fixed; /* Добавьте изображение */
+    background-size: cover;
+    color: #FFD700; /* Золото */
+    margin: 0;
+    padding: 0;
+}
+
+.container {
+    background: rgba(0, 0, 0, 0.8); /* Тёмный оверлей */
+    border: 2px solid #FFD700;
+    border-radius: 10px;
+    padding: 20px;
+    margin: 20px auto;
+    width: 80%;
+}
+
+h1, h2 {
+    text-align: center;
+    text-shadow: 2px 2px #000;
+}
+
+button, .btn {
+    background: #B22222; /* Тёмно-красный */
+    color: #FFD700;
+    border: 2px solid #FFD700;
+    padding: 10px;
+    border-radius: 5px;
+    cursor: pointer;
+}
+
+button:hover, .btn:hover {
+    background: #FFD700;
+    color: #000;
+}
+
+form input, form textarea {
+    background: #333;
+    color: #FFD700;
+    border: 1px solid #FFD700;
+}
+
+/* Иконки классов */
+.tank::before { content: "\🛡️"; }
+.healer::before { content: "\🧪"; }
+/* Добавьте другие */

@@ -1,0 +1,21 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<h2>Объявления</h2>
+{% if announcements %}
+    {% for announcement in announcements %}
+        <div style="border: 1px solid #FFD700; padding: 10px; margin-bottom: 15px; background: rgba(0,0,0,0.6);">
+            <h3>{{ announcement.title }}</h3>
+            <p><b>Категория:</b> {{ announcement.category.get_name_display }}</p>
+            <p><b>Автор:</b> {{ announcement.user.username }}</p>
+            <p>{{ announcement.content|safe|truncatewords:30 }}</p>
+            <a href="{% url 'announcement_detail' announcement.pk %}" class="btn">Подробнее</a>
+            {% if user == announcement.user %}
+                <a href="{% url 'edit_announcement' announcement.pk %}" class="btn">Редактировать</a>
+            {% endif %}
+        </div>
+    {% endfor %}
+{% else %}
+    <p>Объявлений пока нет.</p>
+{% endif %}
+{% endblock %}

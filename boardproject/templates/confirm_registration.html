@@ -1,0 +1,14 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<h2>Подтвердите регистрацию</h2>
+<p>Пожалуйста, введите код подтверждения, отправленный на ваш email.</p>
+<form method="post" novalidate>
+    {% csrf_token %}
+    <p>
+        <label for="code">Код подтверждения:</label><br>
+        <input type="text" name="code" id="code" size="40" required>
+    </p>
+    <button type="submit" class="btn">Подтвердить</button>
+</form>
+{% endblock %}

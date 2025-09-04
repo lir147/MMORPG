@@ -1,0 +1,39 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<h2>Управление откликами на ваши объявления</h2>
+
+<form method="get" style="margin-bottom: 20px;">
+    <label for="category">Фильтр по категории:</label>
+    <select id="category" name="category">
+        <option value="">Все</option>
+        {% for category in categories %}
+            <option value="{{ category.name }}" {% if request.GET.category == category.name %}selected{% endif %}>{{ category.get_name_display }}</option>
+        {% endfor %}
+    </select>
+    <button type="submit" class="btn">Отфильтровать</button>
+</form>
+
+{% if responses %}
+    {% for response in responses %}
+        <div style="border: 1px solid gold; padding: 10px; margin-bottom: 10px; background: rgba(0,0,0,0.7);">
+            <p><b>Объявление:</b> {{ response.announcement.title }}</p>
+            <p><b>От пользователя:</b> {{ response.user.username }}</p>
+            <p>{{ response.text|linebreaks }}</p>
+            <p><small>Отправлено: {{ response.created_at }}</small></p>
+            {% if response.accepted %}
+                <p style="color: #FFD700; font-weight: bold;">Отклик принят</p>
+            {% else %}
+                <form method="post" style="display:inline;">
+                    {% csrf_token %}
+                    <input type="hidden" name="response_id" value="{{ response.id }}">
+                    <button name="action" value="accept" class="btn">Принять</button>
+                    <button name="action" value="delete" class="btn" style="background:#8B0000;">Удалить</button>
+                </form>
+            {% endif %}
+        </div>
+    {% endfor %}
+{% else %}
+    <p>Откликов нет.</p>
+{% endif %}
+{% endblock %}
