@@ -31,7 +31,6 @@ class Category(models.Model):
 
 # Объявления
 class Announcement(models.Model):
-    # Используйте string reference для предотвращения ошибок
     user = models.ForeignKey('board.User', on_delete=models.CASCADE)
     title = models.CharField(max_length=200)
     content = models.TextField()  # Для HTML-контента
@@ -43,13 +42,22 @@ class Announcement(models.Model):
         return self.title
 
 # Отклики
+
+STATUS_CHOICES = [
+        ('pending', 'Ожидает'),
+        ('accepted', 'Принят'),
+        ('rejected', 'Отклонен'),
+    ]
+
 class Response(models.Model):
-    # Используйте string reference
+    status = models.CharField(max_length=10, choices=STATUS_CHOICES, default='pending')
     announcement = models.ForeignKey(Announcement, on_delete=models.CASCADE)
     user = models.ForeignKey('board.User', on_delete=models.CASCADE)
     text = models.TextField()
     accepted = models.BooleanField(default=False)
     created_at = models.DateTimeField(auto_now_add=True)
+
+
 
     def __str__(self):
         return f'Отклик от {self.user} на {self.announcement}'

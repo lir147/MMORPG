@@ -13,4 +13,7 @@ urlpatterns = [
     path('announcement/<int:pk>/', views.announcement_detail, name='announcement_detail'),
     path('response/<int:pk>/', views.submit_response, name='submit_response'),
     path('manage/', views.manage_responses, name='manage_responses'),
+    path('my-responses/', views.my_responses, name='my_responses'),
+    path('response/<int:response_id>/accept/', views.accept_response, name='accept_response'),
+    path('response/<int:response_id>/delete/', views.delete_response, name='delete_response')
 ]

@@ -6,7 +6,36 @@ from django.contrib.auth.decorators import login_required
 from django.views import View
 from .models import User, Announcement, Response, Category
 from .forms import RegistrationForm, AnnouncementForm, ResponseForm
-from django.conf import settings  # Для использования settings.DEFAULT_FROM_EMAIL
+from django.conf import settings
+
+
+
+@login_required
+def my_responses(request):
+    announcements = Announcement.objects.filter(author=request.user)
+    responses = Response.objects.filter(announcement__in=announcements)
+
+    announcement_id = request.GET.get('announcement')
+    if announcement_id:
+        responses = responses.filter(announcement_id=announcement_id)
+
+    return render(request, 'my_responses.html', {
+        'responses': responses,
+        'announcements': announcements,
+    })
+
+@login_required
+def accept_response(request, response_id):
+    response = get_object_or_404(Response, pk=response_id, announcement__author=request.user)
+    response.status = 'accepted'
+    response.save()
+    return redirect('my_responses')
+
+@login_required
+def delete_response(request, response_id):
+    response = get_object_or_404(Response, pk=response_id, announcement__author=request.user)
+    response.delete()
+    return redirect('my_responses')
 
 def index(request):
     announcements = Announcement.objects.all().order_by('-created_at')

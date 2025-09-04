@@ -7,14 +7,21 @@ class RegistrationForm(UserCreationForm):
 
     class Meta:
         model = User
-        fields = ['username', 'email', 'password1', 'password2']
+        fields = ('username', 'email', 'password1', 'password2')
+
+    def save(self, commit=True):
+        user = super().save(commit=False)
+        user.email = self.cleaned_data['email']
+        if commit:
+            user.save()
+        return user
 
 class AnnouncementForm(forms.ModelForm):
     class Meta:
         model = Announcement
         fields = ['title', 'content', 'category', 'image']
         widgets = {
-            'content': forms.Textarea(attrs={'rows': 5}),  # Добавьте TinyMCE для rich-editor
+            'content': forms.Textarea(attrs={'rows': 5}),
         }
 
 class ResponseForm(forms.ModelForm):

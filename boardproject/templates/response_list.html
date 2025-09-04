@@ -1,0 +1,36 @@
+<h1>Мои отклики</h1>
+<form method="get">
+    <label>Фильтр по объявлению:</label>
+    <select name="announcement">
+        <option value="">Все</option>
+        {% for ann in user_announcements %}
+            <option value="{{ ann.id }}">{{ ann.title }}</option>
+        {% endfor %}
+    </select>
+    <button type="submit">Фильтровать</button>
+</form>
+{% for response in responses %}
+    <div>
+        <p><strong>Объявление:</strong> {{ response.announcement.title }}</p>
+        <p><strong>От:</strong> {{ response.user.username }}</p>
+        <p><strong>Текст:</strong> {{ response.text }}</p>
+        <p><strong>Статус:</strong> {{ response.get_status_display }}</p>
+        {% if response.status == 'pending' %}
+            <form method="post" action="{% url 'accept_response' response.id %}">
+                {% csrf_token %}
+                <button type="submit">Принять</button>
+            </form>
+            <form method="post" action="{% url 'reject_response' response.id %}">
+                {% csrf_token %}
+                <button type="submit">Отклонить</button>
+            </form>
+        {% endif %}
+        <form method="post" action="{% url 'delete_response' response.id %}">
+            {% csrf_token %}
+            <button type="submit">Удалить</button>
+        </form>
+    </div>
+{% endfor %}
+{% if responses %}
+    <div>{% include 'pagination.html' %}</div>
+{% endif %}
