@@ -86,9 +86,9 @@ CKEDITOR_5_CONFIGS = {
     'default': {
         'toolbar': [
             'heading', '|',
-            'bold', 'italic', 'link', 'bulletedList', 'numberedList', 'blockQuote', '|',
+            'bold', 'italic', 'link', 'bulletedList', 'numberedList',
+            'blockQuote', '|',
             'insertTable', 'mediaEmbed',
-            'undo', 'redo'
         ],
         'simpleUpload': {
             'uploadUrl': '/ckeditor5/upload/',
@@ -97,7 +97,7 @@ CKEDITOR_5_CONFIGS = {
         'mediaEmbed': {
             'previewsInData': True
         },
-    }
+    },
 }
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'

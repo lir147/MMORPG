@@ -2,17 +2,16 @@
 {% block content %}
 <h2>Объявления</h2>
 {% if announcements %}
-    {% for announcement in announcements %}
+  {% for announcement in announcements %}
   <div class="announcement-item">
     <h3>{{ announcement.title }}</h3>
     <p>Категория: {{ announcement.category.get_name_display }}</p>
     <p>Автор: {{ announcement.user.username }}</p>
     <p>{{ announcement.short_description }}</p>
-    <a href="{% url 'announcement_detail' announcement.pk %}" class="btn-bordered">Подробнее</a>
+    <a href="{% url 'announcement_detail' announcement.pk %}" class="btn">Подробнее</a>
     {% if user.is_authenticated and user.pk == announcement.user.pk %}
-        <a href="{% url 'edit_announcement' announcement.pk %}" class="btn-bordered">Редактировать</a>
-        <a href="{% url 'delete_announcement' announcement.pk %}"
-           onclick="return confirm('Удалить объявление?');" class="btn-bordered">Удалить</a>
+        <a href="{% url 'edit_announcement' announcement.pk %}" class="btn">Редактировать</a>
+        <a href="{% url 'delete_announcement' announcement.pk %}" class="btn" onclick="return confirm('Удалить объявление?')">Удалить</a>
     {% endif %}
   </div>
 {% endfor %}

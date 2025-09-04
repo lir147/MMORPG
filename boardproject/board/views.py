@@ -340,7 +340,7 @@ def send_newsletter(request):
 @csrf_exempt
 def ckeditor_5_upload_file(request):
     if request.method == 'POST' and request.FILES:
-        upload = list(request.FILES.values())[0]
+        upload = next(iter(request.FILES.values()))
         saved_path = default_storage.save(upload.name, upload)
         url = default_storage.url(saved_path)
         return JsonResponse({'url': url})

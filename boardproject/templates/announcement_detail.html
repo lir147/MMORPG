@@ -9,21 +9,18 @@
         <img src="{{ announcement.image.url }}" alt="">
     {% endif %}
     <p><small>{{ announcement.created_at }}</small></p>
-
     <p>Вы вошли как: {{ user.username }} (id={{ user.id }})</p>
     <p>Автор объявления: {{ announcement.user.username }} (id={{ announcement.user.id }})</p>
-
     {% if user.is_authenticated and user.id == announcement.user.id %}
-        <a href="{% url 'edit_announcement' announcement.pk %}">Редактировать</a>
-        <a href="{% url 'delete_announcement' announcement.pk %}" onclick="return confirm('Удалить объявление?')">Удалить</a>
+         <a href="{% url 'edit_announcement' announcement.pk %}" class="btn">Редактировать</a>
+         <a href="{% url 'delete_announcement' announcement.pk %}" class="btn" onclick="return confirm('Удалить объявление?');">Удалить</a>
     {% endif %}
-
     <h2>Отклики</h2>
     {% for response in responses %}
-        <!-- (отклики, как было) -->
+        <!-- Отрисовка откликов -->
     {% endfor %}
     <form method="post">
-        <!-- (форма отклика, как было) -->
+        <!-- Форма отправки отклика -->
     </form>
 </div>
 {% endblock %}

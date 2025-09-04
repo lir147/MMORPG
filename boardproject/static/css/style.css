@@ -1,17 +1,16 @@
-/* MMORPG-стиль: Фэнтези */
 @import url('https://fonts.googleapis.com/css2?family=Cinzel&display=swap');
 
 body {
     font-family: 'Cinzel', serif;
     background: url('/static/images/dungeon-bg.jpg') no-repeat center center fixed;
     background-size: cover;
-    color: #FFD700; /* Золото */
+    color: #FFD700;
     margin: 0;
     padding: 0;
 }
 
 .container {
-    background: rgba(0, 0, 0, 0.8); /* Тёмный оверлей */
+    background: rgba(0, 0, 0, 0.8);
     border: 2px solid #FFD700;
     border-radius: 10px;
     padding: 20px;
@@ -24,23 +23,34 @@ h1, h2 {
     text-shadow: 2px 2px #000;
 }
 
-button, .btn {
-    background: #B22222; /* Тёмно-красный */
+
+button, .btn, a.btn {
+    background: #B22222; 
     color: #FFD700;
     border: 2px solid #FFD700;
-    padding: 10px 20px;
+    padding: 8px 16px;
     border-radius: 5px;
     cursor: pointer;
     font-weight: bold;
     transition: background-color 0.3s ease, color 0.3s ease;
     text-decoration: none;
+    font-family: 'Cinzel', serif;
+    display: inline-block;
+    margin-right: 10px;
+    user-select: none;
+    text-align: center;
+    line-height: normal;
 }
 
-button:hover, .btn:hover {
+button:hover, .btn:hover, a.btn:hover,
+button:focus, .btn:focus, a.btn:focus {
     background: #FFD700;
-    color: #000;
+    color: #000000;
+    text-decoration: none;
+    outline: none;
 }
 
+/* Стили для форм */
 form input, form textarea, form select {
     background: #333;
     color: #FFD700;
@@ -64,25 +74,3 @@ form input, form textarea, form select {
     margin-right: 6px;
 }
 
-.btn-bordered {
-    display: inline-block;
-    padding: 6px 12px;
-    margin-right: 8px;
-    font-weight: 600;
-    color: #FFD700; /* Золотой цвет */
-    background-color: transparent;
-    border: 2px solid #FFD700; /* Золотая рамка */
-    border-radius: 6px;
-    text-decoration: none;
-    cursor: pointer;
-    transition: background-color 0.3s, color 0.3s;
-    font-family: 'Cinzel', serif;
-}
-
-.btn-bordered:hover,
-.btn-bordered:focus {
-    background-color: #FFD700;
-    color: #000;
-    text-decoration: none;
-    outline: none;
-}
