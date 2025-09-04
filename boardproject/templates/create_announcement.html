@@ -2,6 +2,7 @@
 
 {% block content %}
 <h2>{% if form.instance.pk %}Редактирование{% else %}Создание{% endif %} объявления</h2>
+
 <form method="post" enctype="multipart/form-data" novalidate>
     {% csrf_token %}
     {{ form.non_field_errors }}
@@ -29,6 +30,8 @@
         {{ form.image }}
         {{ form.image.errors }}
     </p>
+
+    {{ form.media }}
 
     <button type="submit" class="btn">{% if form.instance.pk %}Сохранить{% else %}Создать{% endif %}</button>
 </form>
