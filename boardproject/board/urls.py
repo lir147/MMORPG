@@ -10,8 +10,12 @@ urlpatterns = [
     path('logout/', auth_views.LogoutView.as_view(next_page='index'), name='logout'),
 
     path('announcement/create/', views.CreateAnnouncementView.as_view(), name='create_announcement'),
+    path('announcement/<int:pk>/', views.announcement_detail, name='announcement_detail'),
+    path('edit/<int:pk>/', views.edit_announcement, name='edit_announcement'),
+    path('response/<int:pk>/', views.submit_response, name='submit_response'),
 
     path('newsletter/subscribe/', views.subscribe_newsletter, name='subscribe_newsletter'),
     path('newsletter/unsubscribe/', views.unsubscribe_newsletter, name='unsubscribe_newsletter'),
     path('newsletter/send/', views.send_newsletter, name='send_newsletter'),
+    path('manage/', views.manage_responses, name='manage_responses'),
 ]

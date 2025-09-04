@@ -17,6 +17,7 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'board',
     'django_ckeditor_5',
+
 ]
 
 MIDDLEWARE = [
@@ -77,20 +78,16 @@ MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 
 CKEDITOR_5_CONFIGS = {
     'default': {
-        'toolbar': {
-            'items': [
-                'heading', '|',
-                'bold', 'italic', 'link', 'bulletedList', 'numberedList', 'blockQuote', '|',
-                'insertTable', 'mediaEmbed', 'undo', 'redo'
-            ]
+        'toolbar': [
+            'heading', '|',
+            'bold', 'italic', 'link', 'bulletedList', 'numberedList', 'blockQuote', '|',
+            'insertTable', 'mediaEmbed', 'undo', 'redo'
+        ],
+        'simpleUpload': {
+            'uploadUrl': '/ckeditor5/upload/',
+            # Доп настройки авторизации загружающих клиентов при необходимости
         },
-        'language': 'en',
-        'image': {
-            'toolbar': [
-                'imageTextAlternative', 'imageStyle:full', 'imageStyle:side'
-            ]
-        },
-    }
+    },
 }
 
 

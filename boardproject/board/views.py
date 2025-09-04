@@ -1,3 +1,4 @@
+import uuid
 from django.views import View
 from django.shortcuts import render, redirect, get_object_or_404
 from django.urls import reverse
@@ -5,9 +6,51 @@ from django.contrib import messages
 from django.conf import settings
 from django.core.mail import send_mail
 from .forms import RegistrationForm, AnnouncementForm
-from .models import User, Announcement, NewsletterSubscriber, Category
 from django.contrib.auth.decorators import login_required
 from django.utils.decorators import method_decorator
+from .models import User, Announcement, Response, Category, NewsletterSubscriber, Newsletter
+from django.db import models
+from django.views.decorators.csrf import csrf_exempt
+from django.http import JsonResponse
+from django.core.files.storage import default_storage
+from .forms import ResponseForm
+
+
+@login_required
+def submit_response(request, pk):
+    announcement = get_object_or_404(Announcement, pk=pk)
+    if request.method == 'POST':
+        form = ResponseForm(request.POST)
+        if form.is_valid():
+            response = form.save(commit=False)
+            response.announcement = announcement
+            response.user = request.user
+            response.save()
+            # можно добавить уведомления по email
+            return redirect('announcement_detail', pk=pk)
+    else:
+        form = ResponseForm()
+    return render(request, 'submit_response.html', {'form': form, 'announcement': announcement})
+
+
+
+@csrf_exempt
+def ckeditor_5_upload(request):
+    if request.method == 'POST' and request.FILES.get('upload'):
+        upload = request.FILES['upload']
+        saved_path = default_storage.save(upload.name, upload)
+        url = default_storage.url(saved_path)
+        return JsonResponse({
+            'url': url
+        })
+    return JsonResponse({'error': 'Invalid request'}, status=400)
+
+
+@login_required
+def manage_responses(request):
+    responses = Response.objects.filter(announcement__user=request.user)
+    return render(request, 'manage_responses.html', {'responses': responses})
+
 
 class CustomRegistrationView(View):
     def get(self, request):
@@ -44,7 +87,7 @@ class ConfirmRegistrationView(View):
             return redirect('register')
         user.email_confirmed = True
         user.is_active = True
-        user.confirmation_token = None
+        confirmation_token = models.UUIDField(default=uuid.uuid4, editable=False, null=True, blank=True)
         user.save()
         messages.success(request, 'Email подтверждён. Теперь вы можете войти.')
         return redirect('login')
@@ -108,3 +151,19 @@ def send_newsletter(request):
         messages.success(request, 'Новостная рассылка отправлена.')
         return redirect('index')
     return render(request, 'send_newsletter.html')
+
+@login_required
+def edit_announcement(request, pk):
+    announcement = get_object_or_404(Announcement, pk=pk, user=request.user)
+    if request.method == 'POST':
+        form = AnnouncementForm(request.POST, request.FILES, instance=announcement)
+        if form.is_valid():
+            form.save()
+            return redirect('index')
+    else:
+        form = AnnouncementForm(instance=announcement)
+    return render(request, 'edit_announcement.html', {'form': form})
+
+def announcement_detail(request, pk):
+    announcement = get_object_or_404(Announcement, pk=pk)
+    return render(request, 'announcement_detail.html', {'announcement': announcement})

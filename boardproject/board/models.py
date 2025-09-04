@@ -44,7 +44,7 @@ class Category(models.Model):
 class Announcement(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE)
     title = models.CharField(max_length=200)
-    content = RichTextField(blank=True)  # для поддержки html и мультимедиа
+    content = models.TextField(blank=True)
     category = models.ForeignKey(Category, on_delete=models.SET_NULL, null=True)
     image = models.ImageField(upload_to='announcements/', blank=True, null=True)
     created_at = models.DateTimeField(auto_now_add=True)

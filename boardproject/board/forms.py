@@ -2,6 +2,12 @@ from django import forms
 from django.contrib.auth.forms import UserCreationForm
 from .models import User, Announcement
 from django_ckeditor_5.widgets import CKEditor5Widget
+from .models import Response
+
+class ResponseForm(forms.ModelForm):
+    class Meta:
+        model = Response
+        fields = ['text']
 
 class AnnouncementForm(forms.ModelForm):
     content = forms.CharField(widget=CKEditor5Widget(config_name='default'))
