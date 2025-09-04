@@ -74,7 +74,7 @@ STATIC_URL = '/static/'
 STATICFILES_DIRS = [os.path.join(BASE_DIR, 'static')]
 
 MEDIA_URL = '/media/'
-MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
+MEDIA_ROOT = BASE_DIR , 'media'
 
 CKEDITOR_5_CONFIGS = {
     'default': {
@@ -83,11 +83,8 @@ CKEDITOR_5_CONFIGS = {
             'bold', 'italic', 'link', 'bulletedList', 'numberedList', 'blockQuote', '|',
             'insertTable', 'mediaEmbed', 'undo', 'redo'
         ],
-        'simpleUpload': {
-            'uploadUrl': '/ckeditor5/upload/',
-            # Доп настройки авторизации загружающих клиентов при необходимости
-        },
-    },
+        'language': 'ru',
+    }
 }
 
 

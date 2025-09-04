@@ -3,13 +3,11 @@ from django.utils import timezone
 from datetime import timedelta
 from django.contrib.auth.models import AbstractUser
 from django.db import models
-from django.utils.crypto import get_random_string
-
-
+from django_ckeditor_5.widgets import CKEditor5Widget
 
 class User(AbstractUser):
     email_confirmed = models.BooleanField(default=False)
-    confirmation_token = models.UUIDField(default=uuid.uuid4, editable=False)
+    confirmation_token = models.UUIDField(default=uuid.uuid4, editable=False, null=True, blank=True)
     token_created_at = models.DateTimeField(auto_now_add=True)
 
     def generate_confirmation_token(self):
@@ -18,8 +16,8 @@ class User(AbstractUser):
         self.save()
 
     def is_token_valid(self):
-        expiration_time = self.token_created_at + timedelta(days=1)
-        return timezone.now() < expiration_time
+        return self.token_created_at >= timezone.now() - timedelta(days=1)
+
 
 class Category(models.Model):
     CATEGORY_CHOICES = [
@@ -37,7 +35,6 @@ class Category(models.Model):
     name = models.CharField(max_length=50, choices=CATEGORY_CHOICES, unique=True)
 
     def __str__(self):
-        # Чтобы отображать русское имя, а не ключ
         return dict(self.CATEGORY_CHOICES).get(self.name, self.name)
 
 
@@ -58,6 +55,7 @@ STATUS_CHOICES = [
     ('accepted', 'Принят'),
     ('rejected', 'Отклонён'),
 ]
+
 
 class Response(models.Model):
     announcement = models.ForeignKey(Announcement, on_delete=models.CASCADE)

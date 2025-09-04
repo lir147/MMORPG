@@ -1,20 +1,7 @@
 from django import forms
 from django.contrib.auth.forms import UserCreationForm
-from .models import User, Announcement
 from django_ckeditor_5.widgets import CKEditor5Widget
-from .models import Response
-
-class ResponseForm(forms.ModelForm):
-    class Meta:
-        model = Response
-        fields = ['text']
-
-class AnnouncementForm(forms.ModelForm):
-    content = forms.CharField(widget=CKEditor5Widget(config_name='default'))
-
-    class Meta:
-        model = Announcement
-        fields = ['title', 'content', 'category', 'image']
+from .models import User, Announcement, Response
 
 class RegistrationForm(UserCreationForm):
     email = forms.EmailField(required=True)
@@ -32,8 +19,20 @@ class RegistrationForm(UserCreationForm):
     def save(self, commit=True):
         user = super().save(commit=False)
         user.email = self.cleaned_data['email']
-        user.is_active = False  # неактивен до подтверждения через email
+        user.is_active = False
         if commit:
             user.save()
         return user
 
+class AnnouncementForm(forms.ModelForm):
+    content = forms.CharField(widget=CKEditor5Widget())
+
+    class Meta:
+        model = Announcement
+        fields = ['title', 'content', 'category', 'image']
+
+
+class ResponseForm(forms.ModelForm):
+    class Meta:
+        model = Response
+        fields = ['text']
