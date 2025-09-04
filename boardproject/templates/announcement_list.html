@@ -1,21 +1,39 @@
 {% extends 'base.html' %}
 {% block content %}
-<h2>Объявления</h2>
-{% if announcements %}
-  {% for announcement in announcements %}
-  <div class="announcement-item">
-    <h3>{{ announcement.title }}</h3>
-    <p>Категория: {{ announcement.category.get_name_display }}</p>
-    <p>Автор: {{ announcement.user.username }}</p>
-    <p>{{ announcement.short_description }}</p>
-    <a href="{% url 'announcement_detail' announcement.pk %}" class="btn">Подробнее</a>
-    {% if user.is_authenticated and user.pk == announcement.user.pk %}
-        <a href="{% url 'edit_announcement' announcement.pk %}" class="btn">Редактировать</a>
-        <a href="{% url 'delete_announcement' announcement.pk %}" class="btn" onclick="return confirm('Удалить объявление?')">Удалить</a>
+
+<div style="display: flex; justify-content: flex-end; margin-bottom: 20px;">
+    {% if user.is_authenticated %}
+        <form action="{% url 'toggle_newsletter_subscription' %}" method="post">
+            {% csrf_token %}
+            {% if user.newslettersubscriber.active %}
+                <button type="submit" class="btn">Отписаться от новостей</button>
+            {% else %}
+                <button type="submit" class="btn">Подписаться на новости</button>
+            {% endif %}
+        </form>
+    {% else %}
+        <a href="{% url 'login' %}" class="btn" style="text-decoration: underline; color: #FFD700;">Войдите для подписки</a>
     {% endif %}
-  </div>
-{% endfor %}
+</div>
+
+<h1>Объявления</h1>
+<!-- Дальше ваш код списка объявлений -->
+
+{% if announcements %}
+    {% for announcement in announcements %}
+        <div class="announcement-item">
+            <h3>{{ announcement.title }}</h3>
+            <p>Категория: {{ announcement.category.get_name_display }}</p>
+            <p>Автор: {{ announcement.user.username }}</p>
+            <a href="{% url 'announcement_detail' announcement.pk %}" class="btn">Подробнее</a>
+            {% if user.is_authenticated and user.pk == announcement.user.pk %}
+                <a href="{% url 'edit_announcement' announcement.pk %}" class="btn">Редактировать</a>
+                <a href="{% url 'delete_announcement' announcement.pk %}" class="btn" onclick="return confirm('Удалить объявление?');">Удалить</a>
+            {% endif %}
+        </div>
+    {% endfor %}
 {% else %}
     <p>Объявлений пока нет.</p>
 {% endif %}
+
 {% endblock %}

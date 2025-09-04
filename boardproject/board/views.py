@@ -1,3 +1,4 @@
+import logging
 from django.views import View
 from django.shortcuts import render, redirect, get_object_or_404
 from django.urls import reverse
@@ -8,14 +9,14 @@ from .forms import RegistrationForm, AnnouncementForm, ResponseForm
 from django.contrib.auth.decorators import login_required
 from django.utils.decorators import method_decorator
 from .models import User, Announcement, Response, NewsletterSubscriber
-import uuid
 from django.views.decorators.csrf import csrf_exempt
 from django.http import JsonResponse
 from django.core.files.storage import default_storage
-import logging  # Для логирования ошибок отправки email
-
+from django.contrib.admin.views.decorators import staff_member_required
+from django.views.decorators.http import require_http_methods
 
 logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
 
 @login_required
 def edit_announcement(request, pk):
@@ -32,12 +33,11 @@ def edit_announcement(request, pk):
 
 @login_required
 def delete_announcement(request, pk):
-    announcement = get_object_or_404(Announcement, pk=pk, user=request.user)  # Только владелец может удалить
+    announcement = get_object_or_404(Announcement, pk=pk, user=request.user)
     announcement.delete()
     messages.success(request, 'Объявление удалено.')
     return redirect('index')
 
-# Оставлена одна функция submit_response с email-уведомлением
 @login_required
 def submit_response(request, pk):
     announcement = get_object_or_404(Announcement, pk=pk)
@@ -48,8 +48,6 @@ def submit_response(request, pk):
             response.announcement = announcement
             response.user = request.user
             response.save()
-
-            # Отправка уведомления владельцу объявления о новом отклике
             subject = 'Новый отклик на ваше объявление'
             message_text = (
                 f'Здравствуйте!\n\nПользователь {response.user.username} ответил на ваше объявление "{announcement.title}".\n\n'
@@ -64,11 +62,10 @@ def submit_response(request, pk):
                     [announcement.user.email],
                     fail_silently=False,
                 )
-                logging.info('Email о новом отклике отправлен на %s', announcement.user.email)
+                logger.info('Email о новом отклике отправлен на %s', announcement.user.email)
             except Exception as e:
-                logging.error('Ошибка при отправке email о новом отклике: %s', str(e))
+                logger.error('Ошибка при отправке email о новом отклике: %s', e)
                 messages.warning(request, 'Не удалось отправить уведомление о новом отклике.')
-
             messages.success(request, 'Отклик отправлен владельцу объявления.')
             return redirect('announcement_detail', pk=pk)
     else:
@@ -81,8 +78,6 @@ def reset_response_to_pending(request, response_id):
     response.status = 'pending'
     response.save()
     messages.success(request, 'Статус отклика сброшен на "ожидает".')
-
-    # НОВОЕ: Отправка уведомления пользователю о сбросе статуса
     subject = 'Статус вашего отклика изменён'
     message_text = (
         f'Здравствуйте, {response.user.username}!\n\n'
@@ -98,11 +93,10 @@ def reset_response_to_pending(request, response_id):
             [response.user.email],
             fail_silently=False,
         )
-        logging.info('Email о сбросе статуса отклика отправлен на %s', response.user.email)
+        logger.info('Email о сбросе статуса отклика отправлен на %s', response.user.email)
     except Exception as e:
-        logging.error('Ошибка при отправке email о сбросе статуса: %s', str(e))
+        logger.error('Ошибка при отправке email о сбросе статуса: %s', e)
         messages.warning(request, 'Не удалось отправить уведомление о сбросе статуса.')
-
     return redirect('manage_responses')
 
 @login_required
@@ -111,8 +105,6 @@ def accept_response(request, response_id):
     response.status = 'accepted'
     response.save()
     messages.success(request, 'Отклик принят.')
-
-    # Отправка уведомления пользователю о принятии отклика
     subject = 'Ваш отклик принят'
     message_text = (
         f'Здравствуйте, {response.user.username}!\n\n'
@@ -128,11 +120,10 @@ def accept_response(request, response_id):
             [response.user.email],
             fail_silently=False,
         )
-        logging.info('Email о принятии отклика отправлен на %s', response.user.email)
+        logger.info('Email о принятии отклика отправлен на %s', response.user.email)
     except Exception as e:
-        logging.error('Ошибка при отправке email о принятии: %s', str(e))
+        logger.error('Ошибка при отправке email о принятии: %s', e)
         messages.warning(request, 'Не удалось отправить уведомление о принятии отклика.')
-
     return redirect('manage_responses')
 
 @login_required
@@ -141,8 +132,6 @@ def reject_response(request, response_id):
     response.status = 'rejected'
     response.save()
     messages.success(request, 'Отклик отклонён.')
-
-    # Отправка уведомления пользователю об отклонении отклика
     subject = 'Ваш отклик отклонён'
     message_text = (
         f'Здравствуйте, {response.user.username}!\n\n'
@@ -158,27 +147,21 @@ def reject_response(request, response_id):
             [response.user.email],
             fail_silently=False,
         )
-        logging.info('Email об отклонении отклика отправлен на %s', response.user.email)
+        logger.info('Email об отклонении отклика отправлен на %s', response.user.email)
     except Exception as e:
-        logging.error('Ошибка при отправке email об отклонении: %s', str(e))
+        logger.error('Ошибка при отправке email об отклонении: %s', e)
         messages.warning(request, 'Не удалось отправить уведомление об отклонении отклика.')
-
     return redirect('manage_responses')
 
 @login_required
 def delete_response(request, response_id):
     response = get_object_or_404(Response, id=response_id, announcement__user=request.user)
-
-    # Сохраняем данные для email ПЕРЕД удалением объекта
     user_email = response.user.email
     username = response.user.username
     announcement_title = response.announcement.title
     response_text = response.text
-
     response.delete()
     messages.success(request, 'Отклик удалён.')
-
-    # Отправка уведомления пользователю об удалении отклика
     subject = 'Ваш отклик удалён'
     message_text = (
         f'Здравствуйте, {username}!\n\n'
@@ -193,19 +176,16 @@ def delete_response(request, response_id):
             [user_email],
             fail_silently=False,
         )
-        logging.info('Email об удалении отклика отправлен на %s', user_email)
+        logger.info('Email об удалении отклика отправлен на %s', user_email)
     except Exception as e:
-        logging.error('Ошибка при отправке email об удалении: %s', str(e))
+        logger.error('Ошибка при отправке email об удалении: %s', e)
         messages.warning(request, 'Не удалось отправить уведомление об удалении отклика.')
-
     return redirect('manage_responses')
 
-# Классы и остальные функции оставлены без изменений
 class CustomRegistrationView(View):
     def get(self, request):
         form = RegistrationForm()
         return render(request, 'registration.html', {'form': form})
-
     def post(self, request):
         form = RegistrationForm(request.POST)
         if form.is_valid():
@@ -250,7 +230,6 @@ class CreateAnnouncementView(View):
     def get(self, request):
         form = AnnouncementForm()
         return render(request, 'create_announcement.html', {'form': form})
-
     def post(self, request):
         form = AnnouncementForm(request.POST, request.FILES)
         if form.is_valid():
@@ -294,24 +273,15 @@ def announcement_detail(request, pk):
     })
 
 @login_required
-def subscribe_newsletter(request):
-    sub, _ = NewsletterSubscriber.objects.get_or_create(user=request.user)
-    sub.active = True
+def toggle_newsletter_subscription(request):
+    sub, created = NewsletterSubscriber.objects.get_or_create(user=request.user)
+    sub.active = not sub.active
     sub.save()
-    messages.success(request, 'Вы подписаны на новости.')
+    if sub.active:
+        messages.success(request, 'Вы подписаны на новости.')
+    else:
+        messages.success(request, 'Вы отписаны от новостей.')
     return redirect('index')
-
-@login_required
-def unsubscribe_newsletter(request):
-    sub = NewsletterSubscriber.objects.filter(user=request.user).first()
-    if sub:
-        sub.active = False
-        sub.save()
-    messages.success(request, 'Вы отписаны от новостей.')
-    return redirect('index')
-
-from django.contrib.admin.views.decorators import staff_member_required
-from django.views.decorators.http import require_http_methods
 
 @staff_member_required
 @require_http_methods(["GET", "POST"])
@@ -323,6 +293,10 @@ def send_newsletter(request):
             return redirect('send_newsletter')
         subscribers = NewsletterSubscriber.objects.filter(active=True).select_related('user')
         emails = [s.user.email for s in subscribers if s.user.email]
+        logger.info(f"Emails для рассылки: {emails}")
+        if not emails:
+            messages.warning(request, 'Нет подписчиков для рассылки.')
+            return redirect('send_newsletter')
         try:
             send_mail(
                 'Новостная рассылка',
@@ -332,7 +306,9 @@ def send_newsletter(request):
                 fail_silently=False,
             )
         except Exception as e:
+            logger.error(f'Ошибка при отправке рассылки: {e}')
             messages.warning(request, 'Не удалось отправить рассылку.')
+            return redirect('send_newsletter')
         messages.success(request, 'Новостная рассылка отправлена.')
         return redirect('index')
     return render(request, 'send_newsletter.html')

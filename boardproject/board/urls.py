@@ -23,8 +23,7 @@ urlpatterns = [
     path('response/<int:response_id>/reset/', views.reset_response_to_pending, name='reset_response'),
     path('response/<int:response_id>/delete/', views.delete_response, name='delete_response'),
 
-    path('newsletter/subscribe/', views.subscribe_newsletter, name='subscribe_newsletter'),
-    path('newsletter/unsubscribe/', views.unsubscribe_newsletter, name='unsubscribe_newsletter'),
+    path('newsletter/toggle/', views.toggle_newsletter_subscription, name='toggle_newsletter_subscription'),
     path('newsletter/send/', views.send_newsletter, name='send_newsletter'),
 
     path('ckeditor5/upload/', views.ckeditor_5_upload_file, name='ck_editor_5_upload_file'),
